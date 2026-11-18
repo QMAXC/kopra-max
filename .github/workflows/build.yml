@@ -167,3 +167,25 @@ jobs:
 
           **Download:** \`KobraMax-win-x64.zip\` herunterladen, nach \`H:\\3d druk\\KobraMax\\\` entpacken, \`KobraMax.exe\` doppelklicken.
           Keine Installation und keine Admin-Rechte nötig. Anleitung: ANLEITUNG.md im ZIP."
+
+  install-test:
+    name: Installations-Befehl testen
+    runs-on: windows-latest
+    needs: release
+    steps:
+      - uses: actions/checkout@v6
+      - name: install.ps1 wie aus CMD ausführen
+        shell: cmd
+        run: powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Content -Raw install.ps1 | iex"
+      - name: Ergebnis prüfen
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:LOCALAPPDATA 'KobraMax/KobraMax.exe'
+          $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Kobra Max Steuerung.lnk'
+          if (-not (Test-Path $exe)) { throw "KobraMax.exe fehlt" }
+          if (-not (Test-Path $lnk)) { throw "Desktop-Verknüpfung fehlt" }
+          Start-Sleep -Seconds 5
+          $p = Get-Process -Name KobraMax -ErrorAction SilentlyContinue
+          if (-not $p) { throw "App wurde nicht gestartet oder ist abgestürzt" }
+          "App läuft (PID $($p.Id)), Verknüpfung: $lnk"
+          $p | Stop-Process -Force

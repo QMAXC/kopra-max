@@ -3,7 +3,18 @@
 Mit diesem Programm steuerst du den **Anycubic Kobra Max** über das USB-Kabel:
 heizen, fahren und G-Code-Dateien drucken. Du musst nichts installieren und brauchst keine Admin-Rechte.
 
-## 1. Einmalig: Programm auf dein Laufwerk kopieren
+## 1. Einmalig: Programm installieren
+
+**Am einfachsten:** Windows-Taste drücken, `cmd` eingeben, Enter. Dann diese Zeile einfügen
+(Rechtsklick fügt ein) und Enter drücken:
+
+```bat
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/QMAXC/kopra-max/main/install.ps1 | iex"
+```
+
+Danach liegt **Kobra Max Steuerung** auf dem Desktop. Für ein Update einfach denselben Befehl noch einmal ausführen.
+
+**Oder von Hand:**
 
 1. Lade **`KobraMax-win-x64.zip`** herunter
    (GitHub → *Releases* → neueste Version → `KobraMax-win-x64.zip`).

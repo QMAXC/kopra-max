@@ -36,7 +36,20 @@ WinUI 3 · C# · .NET 10 · keine Installation, keine Admin-Rechte
 | 💬 **Konsole** | Eigene Befehle (automatisch in Großbuchstaben), Antworten des Druckers |
 | 🧪 **Demo-Modus** | `KobraMax.exe --demo` – simulierter Drucker zum Ausprobieren ohne Hardware |
 
-## Schnellstart (für Schüler)
+## Installieren mit einem Befehl
+
+**Windows-Taste → `cmd` → Enter**, dann diese Zeile einfügen und Enter drücken:
+
+```bat
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/QMAXC/kopra-max/main/install.ps1 | iex"
+```
+
+Das lädt die neueste Version, entpackt sie nach `H:\3d druk\KobraMax` (ohne Laufwerk H: nach
+`%LOCALAPPDATA%\KobraMax`), legt die Verknüpfung **Kobra Max Steuerung** auf den Desktop und startet die App.
+Keine Admin-Rechte nötig. Denselben Befehl später erneut ausführen = **aktualisieren**.
+Alternativ [`install.cmd`](install.cmd) herunterladen und doppelklicken.
+
+## Von Hand installieren
 
 1. [`KobraMax-win-x64.zip`](https://github.com/QMAXC/kopra-max/releases/latest/download/KobraMax-win-x64.zip) herunterladen.
 2. Nach **`H:\3d druk\`** entpacken.
