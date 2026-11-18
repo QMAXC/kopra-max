@@ -196,8 +196,14 @@ jobs:
           $ziel = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk).TargetPath
           "Verknüpfung zeigt auf: $ziel"
           if ($ziel -notlike '*KobraMax.exe') { throw 'Verknüpfung zeigt auf das falsche Ziel' }
+          # Prozesse eines Schritts beendet der Runner am Schrittende – daher hier per Verknüpfung neu starten.
+          Get-Process -Name KobraMax -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Process -FilePath $lnk
+          Start-Sleep -Seconds 8
           $p = Get-Process -Name KobraMax -ErrorAction SilentlyContinue
-          if (-not $p) { throw 'App läuft nicht' }
+          Get-Content 'H:\3d druk\KobraMax\KobraMax-Fehler.log' -ErrorAction SilentlyContinue
+          if (-not $p) { throw 'App startet über die Verknüpfung nicht' }
+          "App läuft über die Verknüpfung (PID $($p.Id))"
           $p | Stop-Process -Force
 
       - name: install.cmd testen
