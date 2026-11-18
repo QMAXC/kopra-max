@@ -9,6 +9,9 @@ public partial class App : Application
 
     public App()
     {
+        Diag.Enabled = _options.ScreenshotPath is not null;
+        Diag.Log("App-Start: " + Environment.CommandLine);
+
         // Muss vor dem Laden der Ressourcen passieren.
         if (_options.Theme == "dark")
         {
@@ -20,9 +23,11 @@ public partial class App : Application
         }
 
         InitializeComponent();
+        Diag.Log("Ressourcen geladen");
         UnhandledException += (_, e) =>
         {
             CrashLog.Write(e.Exception);
+            Diag.Log("Unbehandelt: " + e.Exception);
             e.Handled = _options.ScreenshotPath is null; // im Normalbetrieb lieber weiterlaufen als mitten im Druck abstürzen
         };
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
@@ -36,7 +41,9 @@ public partial class App : Application
 
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        Diag.Log("OnLaunched");
         _window = new MainWindow(_options);
         _window.Activate();
+        Diag.Log("Fenster aktiviert");
     }
 }

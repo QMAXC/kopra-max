@@ -154,6 +154,7 @@ internal sealed class MainWindow : Window
             timer.Interval = TimeSpan.FromSeconds(9);
             timer.IsRepeating = false;
             timer.Tick += async (_, _) => await TakeScreenshotAndExitAsync(pfad);
+            _vm.LogChanged += (_, _) => Diag.Log(_vm.LogLines.Count > 0 ? "log: " + _vm.LogLines[^1] : "log geleert");
             timer.Start();
         }
     }
@@ -452,8 +453,10 @@ internal sealed class MainWindow : Window
     {
         try
         {
+            Diag.Log($"Screenshot: Fenster {AppWindow.Size.Width}x{AppWindow.Size.Height}, Inhalt {_root.ActualWidth}x{_root.ActualHeight}");
             var bild = new RenderTargetBitmap();
             await bild.RenderAsync(_root);
+            Diag.Log($"gerendert {bild.PixelWidth}x{bild.PixelHeight}");
             var pixel = (await bild.GetPixelsAsync()).ToArray();
             var dpi = 96.0 * NativeMethods.ScaleFor(_hwnd);
 
@@ -471,11 +474,16 @@ internal sealed class MainWindow : Window
                 await speicher.AsStreamForRead().CopyToAsync(datei);
             }
 
-            await CloseAsync(askFirst: false);
+            Diag.Log("gespeichert: " + voll);
+            var beenden = CloseAsync(askFirst: false);
+            await Task.WhenAny(beenden, Task.Delay(TimeSpan.FromSeconds(8)));
+            Diag.Log("beendet");
+            Environment.Exit(0);
         }
         catch (Exception e)
         {
             CrashLog.Write(e);
+            Diag.Log("Fehler: " + e);
             Environment.Exit(1);
         }
     }

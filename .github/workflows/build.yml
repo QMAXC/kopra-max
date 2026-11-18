@@ -84,17 +84,41 @@ jobs:
         run: |
           Expand-Archive KobraMax-win-x64.zip -DestinationPath app
           $exe = Resolve-Path app/KobraMax/KobraMax.exe
-          New-Item -ItemType Directory -Force shots | Out-Null
+          New-Item -ItemType Directory -Force shots, diag | Out-Null
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          function Save-Desktop($pfad) {
+            $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+            $g = [System.Drawing.Graphics]::FromImage($bmp)
+            $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+            $bmp.Save($pfad); $g.Dispose(); $bmp.Dispose()
+          }
+          "Bildschirm: " + [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $fehler = $false
           foreach ($theme in 'light', 'dark') {
             $png = Join-Path $PWD "shots/app-$theme.png"
             $p = Start-Process -FilePath $exe -ArgumentList "--screenshot=`"$png`"", "--theme=$theme" -PassThru
-            if (-not $p.WaitForExit(120000)) { $p.Kill(); throw "Zeitüberschreitung ($theme)" }
-            if (-not (Test-Path $png)) {
-              Get-Content app/KobraMax/KobraMax-Fehler.log -ErrorAction SilentlyContinue
-              throw "Kein Screenshot ($theme), Exitcode $($p.ExitCode)"
-            }
-            "{0}: {1:N0} KB" -f $theme, ((Get-Item $png).Length / 1KB)
+            Start-Sleep -Seconds 6
+            Save-Desktop (Join-Path $PWD "diag/desktop-$theme.png")
+            if (-not $p.WaitForExit(60000)) { $p.Kill(); "Zeitüberschreitung ($theme)"; $fehler = $true }
+            elseif (-not (Test-Path $png)) { "Kein Screenshot ($theme), Exitcode $($p.ExitCode)"; $fehler = $true }
+            else { "{0}: {1:N0} KB" -f $theme, ((Get-Item $png).Length / 1KB) }
           }
+          "--- trace ---"; Get-Content app/KobraMax/KobraMax-trace.log -ErrorAction SilentlyContinue
+          "--- fehler ---"; Get-Content app/KobraMax/KobraMax-Fehler.log -ErrorAction SilentlyContinue
+          if ($fehler) {
+            "--- Ereignisanzeige ---"
+            Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = (Get-Date).AddMinutes(-10) } -ErrorAction SilentlyContinue |
+              Where-Object { $_.LevelDisplayName -in 'Error', 'Fehler', 'Warning' } | Select-Object -First 10 |
+              ForEach-Object { "[$($_.ProviderName)] $($_.Message)" }
+            exit 1
+          }
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: diagnose
+          path: diag/*.png
 
       - uses: actions/upload-artifact@v6
         with:
