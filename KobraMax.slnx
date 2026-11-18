@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KobraMax.App/KobraMax.App.csproj" />
+    <Project Path="src/KobraMax.Core/KobraMax.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KobraMax.Tests/KobraMax.Tests.csproj" />
+  </Folder>
+</Solution>

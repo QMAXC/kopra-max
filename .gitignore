@@ -1,0 +1,10 @@
+bin/
+obj/
+out/
+publish/
+TestResults/
+.vs/
+*.user
+*.suo
+KobraMax-Fehler.log
+KobraMax-win-x64.zip

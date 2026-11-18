@@ -1,0 +1,3 @@
+* text=auto
+*.png binary
+*.gcode text eol=crlf
