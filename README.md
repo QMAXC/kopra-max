@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/icon.png" width="96" alt="">
+
 # Kobra Max Steuerung
 
 **Native Windows-App zum Steuern eines Anycubic Kobra Max über USB** – heizen, fahren, G-Code drucken.<br>
@@ -38,16 +40,20 @@ WinUI 3 · C# · .NET 10 · keine Installation, keine Admin-Rechte
 
 ## Installieren mit einem Befehl
 
-**Windows-Taste → `cmd` → Enter**, dann diese Zeile einfügen und Enter drücken:
+**Windows-Taste → `cmd` → Enter**, dann diese Zeile einfügen (Rechtsklick) und Enter drücken:
 
 ```bat
-powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/QMAXC/kopra-max/main/install.ps1 | iex"
+mkdir "H:\3d druk" 2>nul & curl -fL -o "%TEMP%\KobraMax.zip" https://github.com/QMAXC/kopra-max/releases/latest/download/KobraMax-win-x64.zip && tar -xf "%TEMP%\KobraMax.zip" -C "H:\3d druk" && start "" "H:\3d druk\KobraMax\KobraMax.exe"
 ```
 
-Das lädt die neueste Version, entpackt sie nach `H:\3d druk\KobraMax` (ohne Laufwerk H: nach
-`%LOCALAPPDATA%\KobraMax`), legt die Verknüpfung **Kobra Max Steuerung** auf den Desktop und startet die App.
-Keine Admin-Rechte nötig. Denselben Befehl später erneut ausführen = **aktualisieren**.
-Alternativ [`install.cmd`](install.cmd) herunterladen und doppelklicken.
+Das braucht **kein PowerShell und keine Admin-Rechte** – nur `curl` und `tar`, die in Windows 10/11 eingebaut sind.
+Es lädt die neueste Version, entpackt sie nach `H:\3d druk\KobraMax` und startet die App. Beim ersten Start legt
+die App selbst die Verknüpfung **Kobra Max Steuerung** auf den Desktop. Denselben Befehl später erneut
+ausführen = **aktualisieren** (vorher die App schließen).
+
+Alternativ [`install.cmd`](install.cmd) herunterladen und doppelklicken (wählt ohne Laufwerk H: automatisch
+`%LOCALAPPDATA%\KobraMax`). Auf PCs, auf denen PowerShell erlaubt ist, geht auch:
+`powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/QMAXC/kopra-max/main/install.ps1 | iex"`
 
 ## Von Hand installieren
 

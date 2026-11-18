@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using KobraMax.Core;
 using Microsoft.UI.Dispatching;
@@ -127,6 +128,12 @@ internal sealed class MainWindow : Window
         SetTitleBar(titleBar);
 
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        var icon = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "KobraMax.ico");
+        if (File.Exists(icon))
+        {
+            AppWindow.SetIcon(icon); // Taskleiste und Alt+Tab
+        }
+
         SizeWindow();
         AppWindow.Closing += OnClosing;
 
@@ -148,6 +155,10 @@ internal sealed class MainWindow : Window
         if (_options.Demo)
         {
             _vm.ToggleConnection(_vm.DefaultPortIndex, MainViewModel.BaudRates[0]);
+        }
+        else
+        {
+            CreateDesktopShortcut();
         }
 
         if (_options.ScreenshotPath is { } pfad)
@@ -400,6 +411,21 @@ internal sealed class MainWindow : Window
         if (pfad is not null)
         {
             _vm.LoadFile(pfad);
+        }
+    }
+
+    private void CreateDesktopShortcut()
+    {
+        try
+        {
+            if (DesktopShortcut.EnsureOnce() is not null)
+            {
+                _vm.Log("Desktop-Verknüpfung „Kobra Max Steuerung“ wurde angelegt.");
+            }
+        }
+        catch (Exception e) when (e is COMException or IOException or UnauthorizedAccessException)
+        {
+            _vm.Log("Desktop-Verknüpfung konnte nicht angelegt werden: " + e.Message);
         }
     }
 

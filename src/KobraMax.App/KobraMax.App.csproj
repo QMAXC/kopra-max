@@ -6,6 +6,7 @@
     <RootNamespace>KobraMax.App</RootNamespace>
     <AssemblyName>KobraMax</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\KobraMax.ico</ApplicationIcon>
     <UseWinUI>true</UseWinUI>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
@@ -24,6 +25,10 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260921001" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9457" />
     <PackageReference Include="System.Management" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\KobraMax.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

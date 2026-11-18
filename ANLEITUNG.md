@@ -9,10 +9,13 @@ heizen, fahren und G-Code-Dateien drucken. Du musst nichts installieren und brau
 (Rechtsklick fügt ein) und Enter drücken:
 
 ```bat
-powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/QMAXC/kopra-max/main/install.ps1 | iex"
+mkdir "H:\3d druk" 2>nul & curl -fL -o "%TEMP%\KobraMax.zip" https://github.com/QMAXC/kopra-max/releases/latest/download/KobraMax-win-x64.zip && tar -xf "%TEMP%\KobraMax.zip" -C "H:\3d druk" && start "" "H:\3d druk\KobraMax\KobraMax.exe"
 ```
 
-Danach liegt **Kobra Max Steuerung** auf dem Desktop. Für ein Update einfach denselben Befehl noch einmal ausführen.
+Du siehst kurz einen Download-Balken, dann startet die App und legt **Kobra Max Steuerung** auf den
+Desktop. Für ein Update: App schließen und denselben Befehl noch einmal ausführen.
+
+> Kommt bei `curl` oder `tar` „Zugriff verweigert" oder „nicht gefunden", nimm den Weg von Hand.
 
 **Oder von Hand:**
 

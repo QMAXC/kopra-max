@@ -174,18 +174,32 @@ jobs:
     needs: release
     steps:
       - uses: actions/checkout@v6
-      - name: install.ps1 wie aus CMD ausführen
+
+      - name: "Laufwerk H: wie auf dem Schul-PC simulieren"
         shell: cmd
-        run: powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Content -Raw install.ps1 | iex"
-      - name: Ergebnis prüfen
+        run: |
+          mkdir "%RUNNER_TEMP%\hlaufwerk"
+          subst H: "%RUNNER_TEMP%\hlaufwerk"
+
+      - name: Befehl aus dem README in CMD ausführen
+        shell: cmd
+        run: |
+          mkdir "H:\3d druk" 2>nul & curl -fL -o "%RUNNER_TEMP%\KobraMax.zip" https://github.com/QMAXC/kopra-max/releases/latest/download/KobraMax-win-x64.zip && tar -xf "%RUNNER_TEMP%\KobraMax.zip" -C "H:\3d druk" && start "" "H:\3d druk\KobraMax\KobraMax.exe"
+
+      - name: Ergebnis prüfen (App läuft, Desktop-Verknüpfung da)
         shell: pwsh
         run: |
-          $exe = Join-Path $env:LOCALAPPDATA 'KobraMax/KobraMax.exe'
+          if (-not (Test-Path 'H:\3d druk\KobraMax\KobraMax.exe')) { throw 'KobraMax.exe fehlt' }
           $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Kobra Max Steuerung.lnk'
-          if (-not (Test-Path $exe)) { throw "KobraMax.exe fehlt" }
-          if (-not (Test-Path $lnk)) { throw "Desktop-Verknüpfung fehlt" }
-          Start-Sleep -Seconds 5
+          for ($i = 0; $i -lt 30 -and -not (Test-Path $lnk); $i++) { Start-Sleep -Seconds 1 }
+          if (-not (Test-Path $lnk)) { throw 'Desktop-Verknüpfung fehlt' }
+          $ziel = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk).TargetPath
+          "Verknüpfung zeigt auf: $ziel"
+          if ($ziel -notlike '*KobraMax.exe') { throw 'Verknüpfung zeigt auf das falsche Ziel' }
           $p = Get-Process -Name KobraMax -ErrorAction SilentlyContinue
-          if (-not $p) { throw "App wurde nicht gestartet oder ist abgestürzt" }
-          "App läuft (PID $($p.Id)), Verknüpfung: $lnk"
+          if (-not $p) { throw 'App läuft nicht' }
           $p | Stop-Process -Force
+
+      - name: install.cmd testen
+        shell: cmd
+        run: call install.cmd "%RUNNER_TEMP%\zweiter-ordner" && if not exist "%RUNNER_TEMP%\zweiter-ordner\KobraMax\KobraMax.exe" exit /b 1
