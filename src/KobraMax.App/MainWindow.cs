@@ -41,11 +41,13 @@ internal sealed class MainWindow : Window
     private const string IconRight = "\uE76C";
     private const string IconSend = "\uE724";
     private const string IconClear = "\uE74D";
+    private const string IconInfo = "\uE946";
 
     private readonly StartupOptions _options;
     private readonly MainViewModel _vm;
     private readonly IntPtr _hwnd;
     private readonly DispatcherQueueTimer _tempTimer;
+    private readonly DispatcherQueueTimer? _screenshotTimer;
     private readonly Grid _root;
     private bool _keepAwake;
     private bool _logDirty;
@@ -150,12 +152,13 @@ internal sealed class MainWindow : Window
 
         if (_options.ScreenshotPath is { } pfad)
         {
-            var timer = DispatcherQueue.CreateTimer();
-            timer.Interval = TimeSpan.FromSeconds(9);
-            timer.IsRepeating = false;
-            timer.Tick += async (_, _) => await TakeScreenshotAndExitAsync(pfad);
+            // Als Feld halten – ein nur lokal referenzierter Timer wird vom GC eingesammelt und feuert nie.
+            _screenshotTimer = DispatcherQueue.CreateTimer();
+            _screenshotTimer.Interval = TimeSpan.FromSeconds(9);
+            _screenshotTimer.IsRepeating = false;
+            _screenshotTimer.Tick += async (_, _) => await TakeScreenshotAndExitAsync(pfad);
             _vm.LogChanged += (_, _) => Diag.Log(_vm.LogLines.Count > 0 ? "log: " + _vm.LogLines[^1] : "log geleert");
-            timer.Start();
+            _screenshotTimer.Start();
         }
     }
 
@@ -255,7 +258,21 @@ internal sealed class MainWindow : Window
         var eingabe = Row(6, h.Input, new TextBlock { Text = "°C", Style = Resource("SecondaryTextStyle") as Style }, heizen, aus);
         eingabe.Margin = new Thickness(0, 4, 0, 0);
 
-        var panel = new StackPanel { Spacing = 8, Children = { anzeige, h.Bar, eingabe, h.Override } };
+        var info = new Border
+        {
+            Background = Resource("SubtleFillColorSecondaryBrush") as Brush,
+            CornerRadius = new CornerRadius(4),
+            Padding = new Thickness(8, 5, 8, 6),
+            Margin = new Thickness(0, 10, 0, 0),
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Child = Row(8, new FontIcon { Glyph = IconInfo, FontSize = 12, Foreground = Resource("TextFillColorSecondaryBrush") as Brush }, h.Override),
+        };
+
+        var panel = new Grid();
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        Place(panel, new StackPanel { Spacing = 8, Children = { anzeige, h.Bar, eingabe } }, 0, 0);
+        Place(panel, info, 1, 0);
         return Card(h.Name, panel, h.Badge);
     }
 
@@ -518,11 +535,12 @@ internal sealed class MainWindow : Window
 
         _fileText.Text = _vm.FileText;
         _fileText.Opacity = _vm.HasFile ? 1.0 : 0.6;
-        _progressText.Text = _vm.ProgressText;
+        _progressText.Text = _vm.LinesText;
         _progressBar.Value = _vm.ProgressValue;
         _percentText.Text = _vm.HasFile ? $"{(int)_vm.ProgressValue} %" : "";
         _pauseButton.Content = IconContent(_vm.IsPaused ? IconPlay : IconPause, _vm.PauseButtonText);
         _pauseButton.IsEnabled = _stopButton.IsEnabled = _vm.IsPrinting;
+        _startButton.IsEnabled = !_vm.IsPrinting;
         _progressBar.ShowPaused = _vm.IsPaused;
 
         if (_vm.IsPrinting != _keepAwake)
@@ -700,7 +718,7 @@ internal sealed class MainWindow : Window
             Current = new TextBlock { Text = "--", Style = Resource("BigNumberStyle") as Style };
             Target = new TextBlock { Text = "Ziel --", Style = Resource("SecondaryTextStyle") as Style, FontSize = 13 };
             Bar = new ProgressBar { Minimum = 0, Maximum = 100, Value = 0 };
-            Override = new TextBlock { Style = Resource("SecondaryTextStyle") as Style, TextWrapping = TextWrapping.Wrap };
+            Override = new TextBlock { Style = Resource("SecondaryTextStyle") as Style, TextWrapping = TextWrapping.Wrap, MaxWidth = 260 };
             BadgeText = new TextBlock { FontSize = 11, FontWeight = FontWeights.SemiBold };
             Badge = new Border
             {
@@ -747,8 +765,8 @@ internal sealed class MainWindow : Window
             BadgeText.Foreground = Resource(heizt ? "SystemFillColorCautionBrush" : bereit ? "SystemFillColorSuccessBrush" : "TextFillColorSecondaryBrush") as Brush;
 
             Override.Text = eigen is int e
-                ? $"Beim Druck: {e} °C (eigener Wert, Max. {_max} °C)"
-                : "Beim Druck: Wert aus der Datei";
+                ? $"Beim Druck: {e} °C (eigener Wert)"
+                : $"Beim Druck: Wert aus der Datei (max. {_max} °C)";
         }
     }
 }

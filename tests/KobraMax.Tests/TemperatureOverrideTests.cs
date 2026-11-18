@@ -81,4 +81,12 @@ public class TemperatureOverrideTests
         Assert.Equal("M104 S170", TemperatureOverride.Apply("M104 S170", null, 50).Line);
         Assert.Equal("M140 S50", TemperatureOverride.Apply("M140 S80", null, 50).Line);
     }
+
+    [Fact]
+    public void Gleicher_Wert_wird_nicht_geloggt()
+    {
+        var r = TemperatureOverride.Apply("M104 S200", 200, 50);
+        Assert.Equal("M104 S200", r.Line);
+        Assert.Null(r.Log);
+    }
 }

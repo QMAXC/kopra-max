@@ -78,6 +78,11 @@ public static partial class TemperatureOverride
             return new OverrideResult(zeile, null); // "Heizung aus" (S0) am Druckende muss bleiben
         }
 
+        if (altWert == eigen)
+        {
+            return new OverrideResult(zeile, null); // Datei will ohnehin den eigenen Wert – nichts zu tun
+        }
+
         var neuText = eigen.ToString(CultureInfo.InvariantCulture);
         var neu = string.Concat(zeile.AsSpan(0, alt.Index), neuText, zeile.AsSpan(alt.Index + alt.Length));
         return new OverrideResult(neu, $"{name}: Datei wollte {alt.Value} °C, nutze {neuText} °C");

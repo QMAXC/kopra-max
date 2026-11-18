@@ -97,6 +97,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public string ProgressText { get; private set => Set(ref field, value); } = "";
 
+    /// <summary>Wie <see cref="ProgressText"/>, aber ohne Prozentangabe ("123 / 4567 Zeilen").</summary>
+    public string LinesText { get; private set => Set(ref field, value); } = "";
+
     /// <summary>0 bis 100.</summary>
     public double ProgressValue { get; private set => Set(ref field, value); }
 
@@ -337,7 +340,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         _fileLines = zeilen;
         FileText = name;
-        ProgressText = $"{zeilen.Count} Zeilen";
+        ProgressText = LinesText = $"{zeilen.Count} Zeilen";
         ProgressValue = 0;
         Log($"Geladen: {name} ({zeilen.Count} Zeilen)");
         OnPropertyChanged(nameof(HasFile));
@@ -435,7 +438,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 break;
             case ProgressEvent p:
                 ProgressValue = p.Total == 0 ? 0 : 100.0 * p.Done / p.Total;
-                ProgressText = $"{p.Done} / {p.Total} Zeilen ({p.Percent} %)";
+                LinesText = $"{p.Done} / {p.Total} Zeilen";
+                ProgressText = $"{LinesText} ({p.Percent} %)";
                 break;
             case PrintEndedEvent:
                 IsPrinting = false;
